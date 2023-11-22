@@ -38,10 +38,10 @@ If Not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
 
 
 ;==INIT====================================================================
-AppName := "Radial Binder v1.1.221123"
-Global ShortAppName := "Radial Binder"
+Global AppName := "Radial Binder"
+AppVersion := " v1.1.221123"
 
-Menu, Tray, Tip, %AppName%
+Menu, Tray, Tip, %AppName% %AppVersion%
 
 ;IrfanView https://www.irfanview.com
 IfNotExist, %A_Temp%\ahk\irfanview\i_view32.exe
@@ -185,6 +185,7 @@ RadialBinderBuilder()
 SetTimer, Got_Cell, 15
 Return
 
+
 ;==FUNCS===================================================================
 ToolTipShow_Func(ttName) {
    ToolTip, %ttName%
@@ -196,7 +197,7 @@ ToolTipShow_Func(ttName) {
 ScreenShot_Func(ssName) {
    SoundBeep, 150, 120
    SoundBeep, 350, 100
-   Run, "%A_Temp%\ahk\irfanview\i_view32.exe" /capture=3 /convert=%A_WorkingDir%\%ShortAppName%\%ssName%\$U(`%Y-`%m-`%d_`%H`%M`%S).png,,Hide
+   Run, "%A_Temp%\ahk\irfanview\i_view32.exe" /capture=3 /convert=%A_WorkingDir%\%AppName%\%ssName%\$U(`%Y-`%m-`%d_`%H`%M`%S).png,,Hide
 }
 
 WebOverlay_Func(ImgUrl, wImg, hImg) {
@@ -303,7 +304,7 @@ RadialBinderBuilder() {
       
       Sleep, 32
       If Not (GetKeyState("MButton","p"))
-      Return
+         Return
    }
 }
 
@@ -317,21 +318,20 @@ If Not (GetKeyState("MButton","p"))
    SetTimer, Got_Cell, off
    SetTimer, FadeOut_FX, off
 
-	; FadeOut FX
+   ; FadeOut FX
    InitialAlpha = 180 
-	Loop, 17
-	{
-		Loop, 8
-		WinSet, Transparent, %InitialAlpha%, Cell%A_Index%
-		InitialAlpha -= 15 ;AlphaStep
-		Sleep, 25 ;Frame per decay
-	}
-	Loop, 8
-	Gui CellBox%A_Index%: Hide
-	Return
+   Loop, 17
+   {
+      Loop, 8
+      WinSet, Transparent, %InitialAlpha%, Cell%A_Index%
+      InitialAlpha -= 15 ;AlphaStep
+      Sleep, 25 ;Frame per decay
+   }
+   Loop, 8
+   Gui CellBox%A_Index%: Hide
+   Return
 }
 Return
-;==Hotkey=section=starts=here==============================================
 
 
 ;==SYSTEM==================================================================
