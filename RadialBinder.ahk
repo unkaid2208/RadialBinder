@@ -1,9 +1,9 @@
 ; RUS Help: Удерживать СРЕДНЮЮ кнопку мыши - показать меню (для выбора элемента меню - просто навести курсор на нужный элемент). 
-; RUS Help: Удерживать Escape 3 сек - выключить биндер.
+; RUS Help: Удерживать End 3 сек - выключить биндер.
 ; RUS Help: Удерживать End 2 сек - перезапуск биндера.
 ;
-; ENG Help: Hold MMB to display the menu, mouse over to select an item.
-; ENG Help: Hold Escape for 3 sec to shutdown the binder.
+; ENG Help: Hold Middle Mouse Button to display the menu, mouse over to select an item.
+; ENG Help: Hold End for 3 sec to shutdown the binder.
 ; ENG Help: Hold End for 2 sec to reload the binder.
 ;
 ; Ricardo Richi aka Sungrey @ RichiSoft https://linktr.ee/richisoft
@@ -38,14 +38,23 @@ If Not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
 
 
 ;==INIT====================================================================
-AppName := "Radial Binder v1.0.211222"
+AppName := "Radial Binder v1.1.221123"
+Global ShortAppName := "Radial Binder"
+
 Menu, Tray, Tip, %AppName%
 
-IfNotExist, %A_Temp%\i_view32.exe
+;IrfanView https://www.irfanview.com
+IfNotExist, %A_Temp%\ahk\irfanview\i_view32.exe
 {
-   ToolTipShow_Func("Загрузка дополнительных файлов...")
-   URLDownloadToFile, https://cdn.discordapp.com/attachments/982221112492576868/1045382678972743700/i_view32.exe, %A_Temp%\i_view32.exe ;rus: Просто прямая ссылка на IrfanView https://www.irfanview.com
-   ToolTipShow_Func("Загрузка завершена")
+  FileCreateDir, %A_Temp%\ahk\irfanview\zip
+  ToolTipShow_Func("Загрузка дополнительных файлов...")
+  URLDownloadToFile, https://domainunion.de/irfanview/iview462g.zip, %A_Temp%\ahk\irfanview\zip\iview462g.zip
+  Run, tar -xvzf %Temp%\ahk\irfanview\zip\iview462g.zip -C %Temp%\ahk\irfanview\zip,,Hide
+  Sleep, 2000
+  FileMove, %A_Temp%\ahk\irfanview\zip\i_view32.exe, %A_Temp%\ahk\irfanview\i_view32.exe
+  Sleep, 210
+  FileRemoveDir, %A_Temp%\ahk\irfanview\zip, 1
+  ToolTipShow_Func("Загрузка завершена")
 }
 
 
@@ -134,14 +143,12 @@ If Cell contains Cell
    }
    Else If Cell = Cell4
    {
-      NoGui_Func()
       WebOverlay_Func("https://i.imgur.com/0JYqdcL.gif", 1720, 1016) ;rus Карта пожаров EMT EMS
       Return
    }
    Else If Cell = Cell5
    {
-      NoGui_Func()
-      WebOverlay_Func("https://i.imgur.com/5Zo6581.gif", 1689, 1000) ;rus Уголовный кодекс Majestic
+      WebOverlay_Func("https://i.imgur.com/IGC5xKT.gif", 1549, 1013) ;rus Уголовный кодекс Majestic - FIB (08.11.2023)
       Return
    }
    Else If Cell = Cell6
@@ -189,25 +196,28 @@ ToolTipShow_Func(ttName) {
 ScreenShot_Func(ssName) {
    SoundBeep, 150, 120
    SoundBeep, 350, 100
-   Run, "%A_Temp%\i_view32.exe" /capture=3 /convert=%A_WorkingDir%\Screenshots\%ssName%\%ssName%_$U(`%Y-`%m-`%d_`%H`%M`%S).png,,Hide
+   Run, "%A_Temp%\ahk\irfanview\i_view32.exe" /capture=3 /convert=%A_WorkingDir%\%ShortAppName%\%ssName%\$U(`%Y-`%m-`%d_`%H`%M`%S).png,,Hide
 }
 
 WebOverlay_Func(ImgUrl, wImg, hImg) {
-   Gui Overlay: Destroy
+   NoGui_Func()
    Gui Overlay: +Disabled +ToolWindow +AlwaysOnTop -Caption +LastFound
    Gui Overlay: Add, ActiveX, w%wImg% h%hImg%, % "mshtml:<img src='" ImgUrl "' />" 
    Gui Overlay: Color, FFFFFF
    WinSet, TransColor, FFFFFF 220
    Gui Overlay: Show, AutoSize Center NoActivate, Overlay
    Gui Overlay: +E0x80020 ;ignores mouse-over
-   ToolTipShow_Func("Esc - Закрыть")
+   ToolTipShow_Func("Esc/End - Закрыть")
 }
 
 Say_Func(text) {
-   SendMessage, 0x50,, 0x4190419,, A ;rus
-   SendInput, {vk54}
+   Clipboard = 
+   Clipboard = %text%
+   SendMessage, 0x50,, 0x4190419,, A
+   SendInput, {vk54} ;t
    Sleep, 750
-   SendInput, %text%{vk0D}
+   SendInput, ^{vk56} ;ctrl-v
+   SendInput, {vk0d} ; enter
    Sleep, 750
 }
 
@@ -324,18 +334,23 @@ Return
 ;==Hotkey=section=starts=here==============================================
 
 
-;==ESC=3=SEC=-=EXIT;==END=3=SEC=-=RELOAD===================================
+;==SYSTEM==================================================================
 *~$Escape::
 Cancel_Func()
-KeyWait, Escape, T2.8
-If ErrorLevel
-   GoSub, ExitSub
 Return
 
 *~$End::
-KeyWait, End, T1.5
+Cancel_Func()
+KeyWait, End, T0.8
 If ErrorLevel
-   GoSub, ReloadSub
+{
+  KeyWait, End, T2.8
+  If ErrorLevel
+  {
+    GoSub, ExitSub
+  }
+  GoSub, ReloadSub
+}
 Return
 
 ReloadSub:
